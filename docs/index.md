@@ -3,8 +3,6 @@ title: MF Tool
 
 image:
   path: https://raw.githubusercontent.com/pa1tech/MFtool/main/docs/pic.jpg
-  height: 100
-  width: 100
 ---
 <head>
 	<meta property="twitter:card" content="summary" />
@@ -13,7 +11,7 @@ image:
 	<meta property="twitter:site" content="https://pa1tech.github.io/" />	
 </head>
 
-#### Tool to calclate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment
+#### Tool to calculate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment
 ### [Github Repo](https://github.com/pa1tech/MFtool)
 
 ## How to use?
