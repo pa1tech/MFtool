@@ -1,3 +1,7 @@
+---
+title: MF Tool
+
+---
 <head>
 	<meta property="twitter:card" content="summary" />
 	<meta property="twitter:title" content="MF Tool - Pa1Tech" />
