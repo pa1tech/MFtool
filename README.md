@@ -1,6 +1,6 @@
 # MFtool
 
-Tool to calculate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment
+Tool to calculate your MF investment returns and benchmark each fund wrt Nifty 50 performance from the date of investment
 
 ## How to use?
 * Required columns in the input csv file:
