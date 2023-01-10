@@ -1,6 +1,10 @@
 ---
 title: MF Tool
 
+image:
+  path: https://raw.githubusercontent.com/pa1tech/MFtool/main/docs/pic.jpg
+  height: 100
+  width: 100
 ---
 <head>
 	<meta property="twitter:card" content="summary" />
