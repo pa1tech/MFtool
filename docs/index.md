@@ -1,13 +1,11 @@
 <head>
 	<meta property="twitter:card" content="summary" />
 	<meta property="twitter:title" content="MF Tool - Pa1Tech" />
-	<meta property="twitter:image" content="https://repository-images.githubusercontent.com/586988946/d73e2efd-23c5-43e1-9c4b-1cce133a84ec" />
+	<meta property="twitter:image" content="https://raw.githubusercontent.com/pa1tech/MFtool/main/docs/pic.jpg" />
 	<meta property="twitter:site" content="https://pa1tech.github.io/" />	
 </head>
 
-# [MFtool](https://github.com/pa1tech/MFtool)
-
-Tool to calclate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment
+#### Tool to calclate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment [Github Repo](https://github.com/pa1tech/MFtool)
 
 ## How to use?
 * Required columns in the input csv file:
