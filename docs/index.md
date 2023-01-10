@@ -5,7 +5,8 @@
 	<meta property="twitter:site" content="https://pa1tech.github.io/" />	
 </head>
 
-#### Tool to calclate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment [Github Repo](https://github.com/pa1tech/MFtool)
+#### Tool to calclate MF returns and benchmark each fund wrt Nifty 50 performance from the date of investment
+### [Github Repo](https://github.com/pa1tech/MFtool)
 
 ## How to use?
 * Required columns in the input csv file:
