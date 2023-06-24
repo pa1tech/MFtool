@@ -14,9 +14,12 @@ def get_RTA_ISIN(rta_code, scheme_name):
     search = search.split(" ")
     search = "+".join(search)
 
+    search = search.replace("&","%26")
+
     gSearch = requests.get('https://www.google.com/search?q='+search)
     soup = bs4.BeautifulSoup(gSearch.text,"html.parser")
     links = soup.find_all("a")
+
 
     for link in links:
         if( "groww.in" in link.get("href") ):
@@ -30,6 +33,7 @@ def get_RTA_ISIN(rta_code, scheme_name):
 
             schemeName = re.findall('"scheme_name":".*",',growwUrl.text)
             schemeName = schemeName[0].split(':"')[1].split('",')[0]
+            schemeName = schemeName.replace(r"\u0026","&")
 
             if( rtaCode == rta_code):
                 return isin,schemeName
