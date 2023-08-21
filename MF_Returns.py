@@ -2,11 +2,11 @@ import numpy as np
 import os, re, io, requests, openpyxl
 import pandas as pd
 from urllib.request import urlopen
-from datetime import date
+from datetime import date,datetime
 from scipy import optimize
 
-# Global VARs
-currDate = date(2023, 1, 6) #Year,month,date
+# Glocal VARs
+currDate = datetime(2023, 8, 18)
 file = "mf_transactions.csv"
 
 # Functions
@@ -18,7 +18,7 @@ def xnpv(rate,cashflows):
 def xirr(cashflows,currDate,current,guess=0.1):
 	for i in range(len(cashflows)):
 		t = np.array(cashflows[i][0].split('-'),dtype=int)
-		cashflows[i][0] = date(t[0],t[1],t[2])
+		cashflows[i][0] = datetime.strptime(cashflows[i][0], "%Y-%m-%d") 
 	cashflows.append((currDate,-current))
 	return optimize.newton(lambda r: xnpv(r,cashflows),guess)
 
@@ -30,7 +30,6 @@ def getNifty(date):
 	niftyClose = indicesDf.at[0,'Closing Index Value']
 	return float(niftyClose)
 
-#Get MF NAV summary for the given date
 mfTxt = urlopen("https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?tp=1&frmdt=%s-%s-%s"%(currDate.strftime("%d"),currDate.strftime("%b"),currDate.strftime("%Y")))
 mfTxt = str(mfTxt.read())
 def getNAVbyISIN(isin):
@@ -47,14 +46,18 @@ data['days'] = np.zeros(len(data['isin']))
 data['Current NAV'] = np.zeros(len(data['isin']))
 data['Absolute Return Nifty Equiv'] = np.zeros(len(data['isin'])) 
 
+data['trade_date'] = pd.to_datetime(data['trade_date'])
+data['trade_date'] = data['trade_date'].dt.strftime('%Y-%m-%d')
+
+
 for i in range(len(data['isin'])):
 	fund = data.at[i,'isin'] 
-	buyDate = np.array(data['trade_date'][i].split('-'),dtype=int)
 
-	data.at[i,'days'] = (currDate-date(buyDate[0],buyDate[1],buyDate[2])).days
+	buyDate = datetime.strptime(data['trade_date'][i], "%Y-%m-%d") 
+	data.at[i,'days'] = (currDate-buyDate).days
 	data.at[i,'Current NAV'] = getNAVbyISIN(fund)
 	
-	niftyPrice = getNifty(date(buyDate[0],buyDate[1],buyDate[2]))
+	niftyPrice = getNifty(buyDate)
 	data.at[i,'Absolute Return Nifty Equiv'] = 100*(currNifty-niftyPrice)/niftyPrice
 
 data['Absolute Return'] = 100*(data['Current NAV']-data['price'])/data['price']
@@ -64,7 +67,9 @@ data['Absolute Return'] = 100*(data['Current NAV']-data['price'])/data['price']
 summaryDf = pd.DataFrame()
 with pd.ExcelWriter(pwd+'/MF_Report.xlsx', engine='openpyxl') as writer:
 	for fund in data.symbol.unique():
+		
 		fundDf = (data.loc[data['symbol'] == fund]).copy()
+		#print(fundDf.head())
 
 		fundDf['invested'] = fundDf['quantity']*fundDf['price']
 		fundDf['current'] = fundDf['quantity']*fundDf['Current NAV']
@@ -95,6 +100,35 @@ with pd.ExcelWriter(pwd+'/MF_Report.xlsx', engine='openpyxl') as writer:
 
 		fundDf = fundDf.round(decimals = 3)
 		fundDf.to_excel(writer,sheet_name=fund[:31],index=False)
+
+
+	#%%
+	data['invested'] = data['quantity']*data['price']
+	data['current'] = data['quantity']*data['Current NAV']
+	invested = data['invested'].sum()
+	current = data['current'].sum()
+
+	data['weightedDays'] = data['quantity']*data['price']*data['days']/invested
+	data['weighted Absolute Return'] = data['quantity']*data['price']*data['Absolute Return']/invested
+	data['weighted Absolute Return Nifty Equiv.'] = data['quantity']*data['price']*data['Absolute Return Nifty Equiv']/invested
+	
+	weightedDays = data['weightedDays'].sum()
+	weightedPerc = data['weighted Absolute Return'].sum()
+	weightedNiftyPerc = data['weighted Absolute Return Nifty Equiv.'].sum()
+
+	xirrFund = 100*xirr(((data[["trade_date", "invested"]]).values.tolist()),currDate,current)
+	xirrNifty = 100*xirr(((data[["trade_date", "invested"]]).values.tolist()),currDate,invested*(1+weightedNiftyPerc/100))
+
+	newRow = pd.DataFrame({'Fund': "Overall", 
+							'Invested': invested, 
+							'Current': current, 
+							'Avg. Days Invested':weightedDays,
+							'Absolute Return': weightedPerc,
+							'Absolute Return - Nifty Equiv.': weightedNiftyPerc,
+							'XIRR': xirrFund,
+							'XIRR - Nifty Equiv.': xirrNifty}, index = [0])
+
+	summaryDf = pd.concat([summaryDf,newRow])
 
 	summaryDf = summaryDf.round(decimals = 3)
 	summaryDf.to_excel(writer,sheet_name='Summary',index=False)

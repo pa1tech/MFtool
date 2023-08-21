@@ -9,7 +9,7 @@ Tool to calculate your MF investment returns and benchmark each fund wrt Nifty 5
 	3. "trade_date" - Purchase date
 	4. "price" - NAV on purchase date
 	5. "quantity" - Units bought
-* For CAMS statement, first run `cams2isin.py` in the cams folder, which will create the required csv file with ISIN of the funds
+* For CAMS & KFin statement, first run `CAMS_RTA_ISIN.ipynb` in the cams folder, which will create the required csv file with ISIN of the funds
 * Paramters to be edited in `MF_Return.py`:
 	1. currDate = date(2023, 1, 6) (Current date in year,month,date format)
 	2. file = "mf_2022_buy.csv" (Input csv file)
