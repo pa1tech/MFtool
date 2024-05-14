@@ -6,7 +6,7 @@ from datetime import date,datetime
 from scipy import optimize
 
 # Glocal VARs
-currDate = datetime(2023, 8, 18)
+currDate = datetime(2024, 5, 3)
 file = "mf_transactions.csv"
 
 # Functions
@@ -18,6 +18,7 @@ def xnpv(rate,cashflows):
 def xirr(cashflows,currDate,current,guess=0.1):
 	for i in range(len(cashflows)):
 		t = np.array(cashflows[i][0].split('-'),dtype=int)
+		#cashflows[i][0] = cashflows[i][0] #date(t[0],t[1],t[2])
 		cashflows[i][0] = datetime.strptime(cashflows[i][0], "%Y-%m-%d") 
 	cashflows.append((currDate,-current))
 	return optimize.newton(lambda r: xnpv(r,cashflows),guess)
@@ -42,6 +43,7 @@ pwd = os.path.dirname(os.path.realpath(__file__))
 
 # Data Aggregation
 data = pd.read_csv(pwd+'/'+file)
+data1 = pd.read_csv(pwd+'/'+file)
 data['days'] = np.zeros(len(data['isin']))
 data['Current NAV'] = np.zeros(len(data['isin']))
 data['Absolute Return Nifty Equiv'] = np.zeros(len(data['isin'])) 
@@ -52,12 +54,18 @@ data['trade_date'] = data['trade_date'].dt.strftime('%Y-%m-%d')
 
 for i in range(len(data['isin'])):
 	fund = data.at[i,'isin'] 
+	#buyDate = np.array(data['trade_date'][i].split('-'),dtype=int)
 
 	buyDate = datetime.strptime(data['trade_date'][i], "%Y-%m-%d") 
-	data.at[i,'days'] = (currDate-buyDate).days
+	data.at[i,'days'] = (currDate-buyDate).days #(currDate-date(buyDate[0],buyDate[1],buyDate[2])).days
 	data.at[i,'Current NAV'] = getNAVbyISIN(fund)
 	
-	niftyPrice = getNifty(buyDate)
+	#niftyPrice = getNifty(date(buyDate[0],buyDate[1],buyDate[2]))
+	if(str(data.at[i,'NIFTY']) != "nan"):
+		niftyPrice = float(data.at[i,'NIFTY'])
+	else:
+		niftyPrice = getNifty(buyDate)
+		data1.at[i,'NIFTY'] = niftyPrice
 	data.at[i,'Absolute Return Nifty Equiv'] = 100*(currNifty-niftyPrice)/niftyPrice
 
 data['Absolute Return'] = 100*(data['Current NAV']-data['price'])/data['price']
@@ -67,7 +75,7 @@ data['Absolute Return'] = 100*(data['Current NAV']-data['price'])/data['price']
 summaryDf = pd.DataFrame()
 with pd.ExcelWriter(pwd+'/MF_Report.xlsx', engine='openpyxl') as writer:
 	for fund in data.symbol.unique():
-		
+		print(fund)
 		fundDf = (data.loc[data['symbol'] == fund]).copy()
 		#print(fundDf.head())
 
@@ -101,7 +109,6 @@ with pd.ExcelWriter(pwd+'/MF_Report.xlsx', engine='openpyxl') as writer:
 		fundDf = fundDf.round(decimals = 3)
 		fundDf.to_excel(writer,sheet_name=fund[:31],index=False)
 
-
 	#%%
 	data['invested'] = data['quantity']*data['price']
 	data['current'] = data['quantity']*data['Current NAV']
@@ -134,3 +141,5 @@ with pd.ExcelWriter(pwd+'/MF_Report.xlsx', engine='openpyxl') as writer:
 	summaryDf.to_excel(writer,sheet_name='Summary',index=False)
 
 summaryDf.to_excel(pwd+'/MF_Summary.xlsx',index=False)
+
+data1.to_csv(pwd+"/"+file)
